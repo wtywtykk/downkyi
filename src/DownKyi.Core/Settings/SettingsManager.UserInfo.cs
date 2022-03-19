@@ -4,15 +4,6 @@ namespace DownKyi.Core.Settings
 {
     public partial class SettingsManager
     {
-        // 登录用户的mid
-        private readonly UserInfoSettings userInfo = new UserInfoSettings
-        {
-            Mid = -1,
-            Name = "",
-            IsLogin = false,
-            IsVip = false
-        };
-
         /// <summary>
         /// 获取登录用户信息
         /// </summary>
@@ -23,8 +14,14 @@ namespace DownKyi.Core.Settings
             if (appSettings.UserInfo == null)
             {
                 // 第一次获取，先设置默认值
-                SetUserInfo(userInfo);
-                return userInfo;
+                UserInfoSettings emptyUserInfo = new UserInfoSettings
+                {
+                    Mid = -1,
+                    Name = "",
+                    IsLogin = false,
+                    IsVip = false
+                };
+                SetUserInfo(emptyUserInfo);
             }
             return appSettings.UserInfo;
         }

@@ -14,6 +14,7 @@ namespace DownKyi.Services
     public class VideoInfoService : IInfoService
     {
         private readonly VideoView videoView;
+        private readonly Dictionary<long, EdgeInfoV2> edges = new Dictionary<long, EdgeInfoV2>();
 
         public VideoInfoService(string input)
         {
@@ -33,6 +34,31 @@ namespace DownKyi.Services
                 string bvid = ParseEntrance.GetBvId(input);
                 videoView = VideoInfo.VideoViewInfo(bvid);
             }
+
+            var playerV2 = VideoStream.PlayerV2(videoView.Aid, videoView.Bvid, videoView.Cid);
+            if (playerV2 != null && playerV2.Interaction != null)
+            {
+                WalkEdges(VideoInfo.VideoNodelist(videoView.Bvid, playerV2.Interaction.GraphVersion, 1), playerV2.Interaction.GraphVersion);
+            }
+        }
+
+        public void WalkEdges(EdgeInfoV2 edge, long graphVersion)
+        {
+            if (edge != null)
+            {
+                edges.Add(edge.edgeId, edge);
+
+                if (edge.edges.questions != null && edge.edges.questions.Count != 0)
+                {
+                    foreach (var i in edge.edges.questions[0].choices)
+                    {
+                        if (!edges.ContainsKey(i.Id))
+                        {
+                            WalkEdges(VideoInfo.VideoNodelist(videoView.Bvid, graphVersion, i.Id), graphVersion);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -41,6 +67,8 @@ namespace DownKyi.Services
         /// <returns></returns>
         public List<ViewModels.PageViewModels.VideoPage> GetVideoPages()
         {
+            var nodes = GetVideoNodes();
+            if (nodes != null) { return nodes; }
             if (videoView == null) { return null; }
             if (videoView.Pages == null) { return null; }
             if (videoView.Pages.Count == 0) { return null; }
@@ -79,6 +107,77 @@ namespace DownKyi.Services
                     Cid = page.Cid,
                     EpisodeId = -1,
                     FirstFrame = page.FirstFrame,
+                    Order = order,
+                    Name = name,
+                    Duration = "N/A"
+                };
+
+                // UP主信息
+                videoPage.Owner = videoView.Owner;
+                if (videoPage.Owner == null)
+                {
+                    videoPage.Owner = new Core.BiliApi.Models.VideoOwner
+                    {
+                        Name = "",
+                        Face = "",
+                        Mid = -1,
+                    };
+                }
+
+                // 视频发布时间
+                DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new DateTime(1970, 1, 1)); // 当地时区
+                DateTime dateTime = startTime.AddSeconds(videoView.Pubdate);
+                videoPage.PublishTime = dateTime.ToString("yyyy-MM-dd");
+
+                videoPages.Add(videoPage);
+            }
+
+            return videoPages;
+        }
+
+        /// <summary>
+        /// 获取互动视频片段
+        /// </summary>
+        /// <returns></returns>
+        public List<ViewModels.PageViewModels.VideoPage> GetVideoNodes()
+        {
+            if (edges == null) { return null; }
+            if (edges.Count == 0) { return null; }
+
+            List<ViewModels.PageViewModels.VideoPage> videoPages = new List<ViewModels.PageViewModels.VideoPage>();
+
+            int order = 0;
+            foreach (var node in edges.Values)
+            {
+                order++;
+
+                // 标题
+                string name;
+                if (edges.Count == 1)
+                {
+                    name = videoView.Title;
+                }
+                else
+                {
+                    if (node.Title == "")
+                    {
+                        // 如果page.part为空字符串
+                        name = $"{videoView.Title}-N{order}";
+                    }
+                    else
+                    {
+                        name = node.Title;
+                    }
+                }
+
+                var nodeInfo = node.StoryList.Find((x) => x.EdgeId == node.edgeId);
+                ViewModels.PageViewModels.VideoPage videoPage = new ViewModels.PageViewModels.VideoPage
+                {
+                    Avid = videoView.Aid,
+                    Bvid = videoView.Bvid,
+                    Cid = nodeInfo.Cid,
+                    EpisodeId = -1,
+                    FirstFrame = nodeInfo.Cover,
                     Order = order,
                     Name = name,
                     Duration = "N/A"

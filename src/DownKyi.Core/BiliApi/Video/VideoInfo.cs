@@ -1,4 +1,5 @@
 ﻿using DownKyi.Core.BiliApi.Video.Models;
+using DownKyi.Core.BiliApi.VideoStream.Models;
 using DownKyi.Core.Logging;
 using Newtonsoft.Json;
 using System;
@@ -102,5 +103,31 @@ namespace DownKyi.Core.BiliApi.Video
             }
         }
 
+        /// <summary>
+        /// 查询互动视频节点列表
+        /// </summary>
+        /// <param name="bvid"></param>
+        /// <returns></returns>
+        public static EdgeInfoV2 VideoNodelist(string bvid ,long graphVersion,long edgeId)
+        {
+            string baseUrl = "https://api.bilibili.com/x/stein/edgeinfo_v2";
+            string referer = "https://www.bilibili.com";
+            string url = $"{baseUrl}?bvid={bvid}&graph_version={graphVersion}&edge_id={edgeId}";
+
+            string response = WebClient.RequestWeb(url, referer);
+
+            try
+            {
+                var nodelist = JsonConvert.DeserializeObject<EdgeInfoV2Origin>(response);
+                if (nodelist != null) { return nodelist.Data; }
+                else { return null; }
+            }
+            catch (Exception e)
+            {
+                Utils.Debugging.Console.PrintLine("VideoNodelist()发生异常: {0}", e);
+                LogManager.Error("VideoInfo", e);
+                return null;
+            }
+        }
     }
 }

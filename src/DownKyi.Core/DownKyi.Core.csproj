@@ -217,6 +217,8 @@
     <Compile Include="BiliApi\Users\UserRelation.cs" />
     <Compile Include="BiliApi\Users\UserSpace.cs" />
     <Compile Include="BiliApi\Users\UserStatus.cs" />
+    <Compile Include="BiliApi\VideoStream\Models\InteractionInfo.cs" />
+    <Compile Include="BiliApi\VideoStream\Models\Node.cs" />
     <Compile Include="BiliApi\VideoStream\Models\PlayerV2.cs" />
     <Compile Include="BiliApi\VideoStream\Models\PlayUrl.cs" />
     <Compile Include="BiliApi\VideoStream\Models\PlayUrlDash.cs" />
@@ -229,6 +231,7 @@
     <Compile Include="BiliApi\VideoStream\PlayStreamType.cs" />
     <Compile Include="BiliApi\VideoStream\VideoStream.cs" />
     <Compile Include="BiliApi\Video\Dynamic.cs" />
+    <Compile Include="BiliApi\Video\Models\EdgeInfoV2.cs" />
     <Compile Include="BiliApi\Video\Models\RankingVideoView.cs" />
     <Compile Include="BiliApi\Video\Models\RegionDynamic.cs" />
     <Compile Include="BiliApi\Video\Models\RegionRanking.cs" />

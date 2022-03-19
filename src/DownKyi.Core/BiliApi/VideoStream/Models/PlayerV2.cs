@@ -29,6 +29,8 @@ namespace DownKyi.Core.BiliApi.VideoStream.Models
         // ...
         [JsonProperty("subtitle")]
         public SubtitleInfo Subtitle { get; set; }
+        [JsonProperty("interaction")]
+        public InteractionInfo Interaction { get; set; }
     }
 
 }
